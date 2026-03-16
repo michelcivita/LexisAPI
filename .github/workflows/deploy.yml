@@ -32,10 +32,10 @@ jobs:
     # Explicação dos comandos:
     # docker build . -t ... : Cria a imagem baseada no seu Dockerfile
     # docker push ... : Envia a imagem criada para a nuvem
-    - name: 'Build and push image'
-      run: |
-        docker build . -t ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.DOCKER_IMAGE_NAME }}
-        docker push ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.DOCKER_IMAGE_NAME }}
+    ## - name: 'Build and push image'
+   ##   run: |
+    ##    docker build . -t ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.DOCKER_IMAGE_NAME }}
+   ##     docker push ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.DOCKER_IMAGE_NAME }}
 
     # 4. Pega a imagem que acabamos de subir e joga no Web App
     # O 'images' diz para a Azure qual container baixar e rodar.
