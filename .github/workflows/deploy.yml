@@ -1,0 +1,47 @@
+name: Deploy Docker to Azure
+
+# GATILHO: Quando isso vai rodar?
+on:
+  push:
+    branches:
+      - main  # Roda sempre que houver um commit na branch 'main'
+
+# VARIÁVEIS DE AMBIENTE (Use para facilitar a manutenção)
+env:
+  DOCKER_IMAGE_NAME: minhamagem:latest # Nome da sua imagem
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest  # A máquina virtual do GitHub que executará os comandos
+
+    steps:
+    # 1. Baixa o seu código do repositório para a máquina do GitHub
+    - name: 'Checkout GitHub Action'
+      uses: actions/checkout@v4
+
+    # 2. Faz login no seu Registro de Containers (ACR) da Azure
+    # Isso permite que a máquina do GitHub envie a imagem para lá.
+    - name: 'Login via Azure CLI'
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+
+    # 3. Constrói a imagem Docker e envia (push) para a Azure
+    # Explicação dos comandos:
+    # docker build . -t ... : Cria a imagem baseada no seu Dockerfile
+    # docker push ... : Envia a imagem criada para a nuvem
+    - name: 'Build and push image'
+      run: |
+        docker build . -t ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.DOCKER_IMAGE_NAME }}
+        docker push ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.DOCKER_IMAGE_NAME }}
+
+    # 4. Pega a imagem que acabamos de subir e joga no Web App
+    # O 'images' diz para a Azure qual container baixar e rodar.
+    - name: 'Deploy to Azure Web App'
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'lckwebapp-dhaphndxbpargfen.brazilsouth-01' # Coloque o nome exato que criou na Azure
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        images: '${{ secrets.ACR_LOGIN_SERVER }}/${{ env.DOCKER_IMAGE_NAME }}'
