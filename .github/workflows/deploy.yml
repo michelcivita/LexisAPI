@@ -7,8 +7,8 @@ on:
       - main  # Roda sempre que houver um commit na branch 'main'
 
 # VARIÁVEIS DE AMBIENTE (Use para facilitar a manutenção)
-env:
-  DOCKER_IMAGE_NAME: minhamagem:latest # Nome da sua imagem
+#env:
+#  DOCKER_IMAGE_NAME: minhamagem:latest # Nome da sua imagem
 
 jobs:
   build-and-deploy:
