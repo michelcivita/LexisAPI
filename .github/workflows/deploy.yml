@@ -1,27 +1,13 @@
-name: Teste de Deploy - Nginx na Azure
-
-on:
-  push:
-    branches:
-      - main
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-    # 1. Checkout apenas por boa prática (necessário se houver arquivos de config)
-    - name: 'Checkout GitHub Action'
-      uses: actions/checkout@v4
-
-    # 2. Deploy direto para o Web App usando uma imagem pública
-    - name: 'Deploy to Azure Web App'
+- name: 'Deploy to Azure Web App'
       uses: azure/webapps-deploy@v2
       with:
-        # IMPORTANTE: Removi o sufixo '.brazilsouth-01'
-        app-name: 'lckwebapp-dhaphndxbpargfen' 
+        # Nome exato do recurso (sem sufixos de região)
+        app-name: 'lckwebapp-dhaphndxbpargfen'
         
+        # O segredo com o conteúdo do arquivo .publishsettings
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
         
-        # Usando a imagem oficial do Nginx para o teste
+        # Imagem pública para o teste
         images: 'nginx:latest'
+        
+        # REMOVIDOS: slot-name e package
