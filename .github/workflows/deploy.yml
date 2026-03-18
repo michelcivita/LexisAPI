@@ -3,8 +3,8 @@ name: Deploy NGINX to Azure Web App
 # GATILHO: Define quando a automação vai rodar.
 on:
   push:
-    branches:
-      - main  # Vai rodar automaticamente sempre que houver um novo commit na branch 'main'.
+    branches: [ "main" ]
+     # Vai rodar automaticamente sempre que houver um novo commit na branch 'main'.
   workflow_dispatch:  # Permite que você clique em um botão no GitHub para rodar o pipeline manualmente, ótimo para testes.
 
 # TAREFAS: O que será executado
@@ -17,6 +17,12 @@ jobs:
     - name: 'Checkout do código'
       uses: actions/checkout@v4
 
+    # NOVO PASSO: Autenticação profissional
+    - name: 'Login na Azure'
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
     # Passo 2: Executar o deploy na Azure usando a credencial que salvamos.
     # O comando abaixo diz para a Azure: "Pegue este App Service e force ele a rodar a imagem nginx:latest".
     - name: 'Deploy para o Azure Web App'
@@ -25,3 +31,4 @@ jobs:
         app-name: 'lckwebapp' # SUBSTITUA AQUI pelo nome exato do Web App que você criou no Passo 1 (ex: meu-webapp-nginx-teste)
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }} # Puxa o XML de forma segura
         images: 'nginx:latest' # Informa diretamente qual imagem pública usar
+        
