@@ -11,6 +11,24 @@ jobs:
     steps:
       - name: 'Checkout do Codigo'
         uses: actions/checkout@v4
+      - name: 'Login na Azure'
+        uses: azure/login@v1
+        with:
+        # Use o segredo JSON que criamos ou crie um novo se ainda não tiver
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: 'Deploy via Azure CLI (Force)'
+        run: |
+          az webapp config container set \
+          --name webapp \
+          --resource-group MEU_GRUPO_DE_RECURSOS \
+          --docker-custom-image-name nginx:latest
+
+
+
+
+
+
 
       - name: 'Deploy para Azure Web App'
         uses: azure/webapps-deploy@v2
