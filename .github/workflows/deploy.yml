@@ -1,39 +1,25 @@
-name: Teste Conexao Azure Nginx
+name: Deploy Nginx Force
 
 on:
   push:
     branches: [ "main" ]
-  workflow_dispatch: # Permite rodar manualmente no botão "Run workflow"
+  workflow_dispatch:
 
 jobs:
-  deploy-teste:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout do Codigo'
         uses: actions/checkout@v4
+
       - name: 'Login na Azure'
         uses: azure/login@v1
         with:
-        # Use o segredo JSON que criamos ou crie um novo se ainda não tiver
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: 'Deploy via Azure CLI (Force)'
+      - name: 'Deploy via Azure CLI'
         run: |
           az webapp config container set \
-          --name webapp \
-          --resource-group MEU_GRUPO_DE_RECURSOS \
-          --docker-custom-image-name nginx:latest
-
-
-
-
-
-
-
-      - name: 'Deploy para Azure Web App'
-        uses: azure/webapps-deploy@v2
-        with:
-          # ATENÇÃO: Verifique se o nome abaixo é EXATAMENTE o que aparece no portal
-          app-name: 'lckwebapp' 
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          images: 'nginx:latest'
+            --name lckwebapp \
+            --resource-group lockton-br-rg-devops \
+            --docker-custom-image-name nginx:latest
