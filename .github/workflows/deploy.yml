@@ -22,6 +22,6 @@ jobs:
     - name: 'Deploy para o Azure Web App'
       uses: azure/webapps-deploy@v2
       with:
-        app-name: 'NOME_DO_SEU_WEB_APP' # SUBSTITUA AQUI pelo nome exato do Web App que você criou no Passo 1 (ex: meu-webapp-nginx-teste)
+        app-name: 'lckwebapp-dhaphndxbpargfen' # SUBSTITUA AQUI pelo nome exato do Web App que você criou no Passo 1 (ex: meu-webapp-nginx-teste)
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }} # Puxa o XML de forma segura
         images: 'nginx:latest' # Informa diretamente qual imagem pública usar
