@@ -1,0 +1,70 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches:
+      - '**'
+  push:
+    branches:
+      - master
+      - staging
+
+jobs:
+  build-test:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Configurar Docker
+        run: |
+          export COMMIT_SHORT=$(echo $GITHUB_SHA | cut -c1-7)
+          sed -i "s|YYZ|$COMMIT_SHORT|g" Dockerfile
+          docker build -t dckr-reg.firma.com.br/${{ secrets.PROJECT_NAME }}:$COMMIT_SHORT --build-arg ENV=dev .
+
+  publish-dev:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Login no Registry
+        run: echo "${{ secrets.REG_P }}" | docker login dckr-reg.firma.com.br --username ${{ secrets.REG_USER }} --password-stdin
+
+      - name: Build e Push da Imagem
+        run: |
+          export COMMIT_SHORT=$(echo $GITHUB_SHA | cut -c1-7)
+          sed -i "s|YYZ|$COMMIT_SHORT|g" Dockerfile
+          IMAGE_TAG=$(./builderbin/gettag.sh "master" "$GITHUB_SHA" "main")
+          docker build -t dckr-reg.firma.com.br/${{ secrets.PROJECT_NAME }}:$IMAGE_TAG --build-arg ENV=dev .
+          docker push dckr-reg.firma.com.br/${{ secrets.PROJECT_NAME }}:$IMAGE_TAG
+
+      - name: Deploy via Ansible
+        run: |
+          ansible dockerserver3dev -i /ansibledefs/hosts -a "docker login dckr-reg.firma.com.br --username ${{ secrets.REG_USER }} --password ${{ secrets.REG_P }}"
+          ansible dockerserver3dev -i /ansibledefs/hosts -a "docker service update --with-registry-auth --image dckr-reg.firma.com.br/${{ secrets.PROJECT_NAME }}:$IMAGE_TAG ${{ secrets.PROJECT_NAME }}-development"
+
+  publish-staging:
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Login no Registry
+        run: echo "${{ secrets.REG_P }}" | docker login dckr-reg.firma.com.br --username ${{ secrets.REG_USER }} --password-stdin
+
+      - name: Build e Push da Imagem
+        run: |
+          export COMMIT_SHORT=$(echo $GITHUB_SHA | cut -c1-7)
+          sed -i "s|YYZ|$COMMIT_SHORT|g" Dockerfile
+          IMAGE_TAG=$(./builderbin/gettag.sh "staging" "$GITHUB_SHA" "staging")
+          docker build -t dckr-reg.firma.com.br/${{ secrets.PROJECT_NAME }}:$IMAGE_TAG --build-arg ENV=homolog .
+          docker push dckr-reg.firma.com.br/${{ secrets.PROJECT_NAME }}:$IMAGE_TAG
+
+      - name: Deploy via Ansible
+        run: |
+          ansible dockerserver1hom -i /ansibledefs/hosts -a "docker login dckr-reg.firma.com.br --username ${{ secrets.REG_USER }} --password ${{ secrets.REG_P }}"
+          ansible dockerserver1hom -i /ansibledefs/hosts -a "docker service update --with-registry-auth --image dckr-reg.firma.com.br/${{ secrets.PROJECT_NAME }}:$IMAGE_TAG ${{ secrets.PROJECT_NAME }}-staging"
